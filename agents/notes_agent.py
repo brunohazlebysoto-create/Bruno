@@ -1,7 +1,8 @@
-"""Notes Agent — generates comprehensive pediatric surgery clinical notes."""
+"""Notes Agent — generates pediatric surgery notes using Gemini 1.5 Flash."""
+import json
 import os
-import anthropic
 from rich.console import Console
+from tools.llm import call_llm
 
 console = Console()
 
@@ -42,18 +43,15 @@ Estructura el apunte con las siguientes secciones en Markdown:
 
 ## 4. Diagnóstico
 ### 4.1 Clínico
-- Anamnesis (preguntar a los padres: duración, síntomas asociados)
-- Exploración física específica
+- Anamnesis y exploración física específica
 - Scores y criterios diagnósticos validados en pediatría
 
 ### 4.2 Laboratorio
 - Estudios básicos y específicos (con valores de referencia pediátricos)
-- Marcadores relevantes
 
 ### 4.3 Imagen
-- Técnica de elección (justificar preferencia sin radiación en pediatría)
-- Hallazgos característicos
-- Criterios diagnósticos por imagen
+- Técnica de elección (preferencia sin radiación en pediatría)
+- Hallazgos característicos y criterios diagnósticos por imagen
 
 ### 4.4 Diagnóstico Diferencial (tabla)
 | Diagnóstico | Características diferenciadores | Estudio clave |
@@ -63,91 +61,71 @@ Estructura el apunte con las siguientes secciones en Markdown:
 ### 5.1 Preparación Preoperatoria
 - Resucitación y estabilización (específica por grupo etario)
 - Corrección de desequilibrios metabólicos (con metas numéricas)
-- Ayuno preoperatorio (guías pediátricas actuales: regla 6-4-2-1)
+- Ayuno preoperatorio (guías pediátricas: regla 6-4-2-1)
 - Profilaxis antibiótica (fármaco + dosis mg/kg)
 
 ### 5.2 Consideraciones Anestésicas
-- Tipo de anestesia preferida
-- Premedicación y técnicas de inducción en niños
-- Manejo de la vía aérea pediátrica
-- Analgesia regional (bloqueos específicos)
-- Temperatura y fluidoterapia perioperatoria
+- Tipo de anestesia preferida y manejo de la vía aérea pediátrica
+- Analgesia regional (bloqueos específicos) y fluidoterapia perioperatoria
 
 ### 5.3 Técnica Quirúrgica
 #### Abordaje preferido (según evidencia)
 - Paso a paso de la técnica principal
-- Variantes técnicas y cuándo usarlas
 - Puntos críticos y errores a evitar
 
 #### Técnica alternativa
-- Indicaciones específicas
-- Descripción breve
+- Indicaciones específicas y descripción breve
 
 ### 5.4 Cuidados Postoperatorios
-- Monitorización específica (incluir apnea en prematuros si aplica)
-- Manejo del dolor (analgesia multimodal pediátrica con dosis)
-- Realimentación (esquema progresivo)
-- Criterios de alta
+- Monitorización específica (apnea en prematuros si aplica)
+- Manejo del dolor (analgesia multimodal pediátrica con dosis mg/kg)
+- Realimentación (esquema progresivo) y criterios de alta
 
 ### 5.5 Tratamiento No Quirúrgico
-- Indicaciones del manejo conservador (si existe)
-- Protocolo y fármacos (con dosis pediátricas mg/kg)
+- Indicaciones del manejo conservador y protocolo (dosis pediátricas mg/kg)
 
 ## 6. Complicaciones
 ### 6.1 Intraoperatorias
 ### 6.2 Postoperatorias Tempranas (< 30 días)
 ### 6.3 Tardías y Seguimiento a Largo Plazo
-- Impacto en crecimiento y desarrollo
-- Calidad de vida
 
-## 7. Síntesis de la Evidencia (basado en el meta-análisis)
+## 7. Síntesis de la Evidencia
 - Nivel de evidencia global y grado de recomendación
-- Técnica quirúrgica recomendada con base en la evidencia
-- Áreas de consenso y controversia en cirugía infantil
+- Técnica quirúrgica recomendada basada en la evidencia
+- Áreas de consenso y controversia
 - Tabla resumen de estudios clave
 
-## 8. Perlas Clínicas y Puntos Clave
-> 10 bullet points esenciales para el cirujano pediatra
+## 8. Perlas Clínicas — 10 Puntos Clave
 
 ## 9. Referencias Principales
-- Lista las fuentes más relevantes del análisis con año y revista
 
-Sé exhaustivo y didáctico. Usa **negrita** para conceptos clave, tablas Markdown donde sea útil,
-y siempre especifica dosis en mg/kg para medicamentos pediátricos.
-Mínimo 2000 palabras.
+Sé exhaustivo. Usa **negrita** para conceptos clave, tablas Markdown y siempre
+especifica dosis en mg/kg. Mínimo 2000 palabras.
 """
 
 
 class NotesAgent:
-    """Generates comprehensive pediatric surgery clinical notes."""
+    """Generates comprehensive pediatric surgery notes with Gemini."""
 
     name = "Agente Redactor de Apuntes"
     description = (
-        "Cirujano pediatra docente experto en elaboración de apuntes quirúrgicos pediátricos. "
-        "Redacta apuntes clínicos completos con técnica quirúrgica, "
-        "cuidados perioperatorios y dosificación pediátrica."
+        "Cirujano pediatra docente · Técnica quirúrgica paso a paso · "
+        "Dosis mg/kg · Cuidados perioperatorios pediátricos"
     )
 
     def __init__(self, api_key: str = ""):
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        )
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
 
     def run(self, topic: str, meta: dict, papers: list[dict]) -> str:
-        import json
         console.print(
-            f"\n[bold cyan]📝 {self.name}[/bold cyan] — redactando apunte sobre: [italic]{topic}[/italic]\n"
+            f"\n[bold cyan]📝 {self.name}[/bold cyan] — "
+            f"redactando apunte: [italic]{topic}[/italic]\n"
         )
         meta_json = json.dumps(meta, ensure_ascii=False, indent=2)[:8000]
         prompt = NOTES_PROMPT.format(topic=topic, meta_json=meta_json)
 
         with console.status("  Generando apunte de cirugía infantil..."):
-            msg = self.client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=8096,
-                system=SYSTEM,
-                messages=[{"role": "user", "content": prompt}],
-            )
-        notes = msg.content[0].text.strip()
+            notes = call_llm(SYSTEM, prompt, self.api_key, max_tokens=8192, temperature=0.4)
+
         console.print("  [bold]✓ Apunte generado[/bold]\n")
         return notes

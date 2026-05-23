@@ -1,8 +1,8 @@
-"""Meta-analysis Agent — synthesizes evidence across papers using Claude."""
+"""Meta-analysis Agent — synthesizes evidence using Gemini 1.5 Flash."""
 import json
 import os
-import anthropic
 from rich.console import Console
+from tools.llm import call_llm
 
 console = Console()
 
@@ -79,14 +79,12 @@ class MetaAnalysisAgent:
 
     name = "Agente Meta-Analista"
     description = (
-        "Bioestadístico clínico experto en síntesis de evidencia. "
-        "Evalúa heterogeneidad, sesgos y produce conclusiones GRADE."
+        "Bioestadístico en cirugía infantil · Síntesis GRADE · "
+        "Distribución etaria · Técnicas quirúrgicas comparadas"
     )
 
     def __init__(self, api_key: str = ""):
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        )
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
 
     def _summarize_for_prompt(self, papers: list[dict]) -> str:
         summaries = []
@@ -114,23 +112,14 @@ class MetaAnalysisAgent:
 
     def run(self, papers: list[dict], topic: str) -> dict:
         console.print(
-            f"\n[bold cyan]📊 {self.name}[/bold cyan] — sintetizando {len(papers)} artículos\n"
+            f"\n[bold cyan]📊 {self.name}[/bold cyan] — "
+            f"sintetizando {len(papers)} artículos\n"
         )
         articles_json = self._summarize_for_prompt(papers)
         prompt = META_PROMPT.format(articles_json=articles_json, topic=topic)
 
         try:
-            msg = self.client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=4096,
-                system=SYSTEM,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            text = msg.content[0].text.strip()
-            if text.startswith("```"):
-                text = text.split("```")[1]
-                if text.startswith("json"):
-                    text = text[4:]
+            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=4096)
             meta = json.loads(text)
         except Exception as e:
             console.print(f"  [red]Error en meta-análisis:[/red] {e}")

@@ -2,12 +2,12 @@
 import json
 import os
 import re
-import anthropic
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from rich.console import Console
+from tools.llm import call_llm
 
 console = Console()
 
@@ -442,9 +442,7 @@ class PPTAgent:
     )
 
     def __init__(self, api_key: str = ""):
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        )
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
 
     def _get_slide_content(self, topic: str, meta: dict) -> dict:
         import datetime
@@ -464,17 +462,7 @@ class PPTAgent:
             meta_summary=meta_summary,
             fecha=fecha,
         )
-        msg = self.client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=6000,
-            system=SYSTEM,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = msg.content[0].text.strip()
-        if text.startswith("```"):
-            text = text.split("```")[1]
-            if text.startswith("json"):
-                text = text[4:]
+        text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=6000)
         return json.loads(text)
 
     def run(self, topic: str, meta: dict, output_path: str) -> str:

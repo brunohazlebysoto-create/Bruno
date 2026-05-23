@@ -83,7 +83,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
 
         if not api_key:
             _emit(q, "pipeline_error",
-                  message="ANTHROPIC_API_KEY no configurada. Ingresala en el formulario.")
+                  message="Google AI API Key no configurada. Obtén una gratis en aistudio.google.com y pégala en el formulario.")
             q.put(None)
             return
 
@@ -93,7 +93,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
               description="Cirujano pediatra · PICO-S · Nivel evidencia CEBM · "
                           "Calidad metodológica · Grupo etario")
         em = AgentEmitter(q, "Analizador")
-        em.log(f"Analizando {len(batch)} artículos con Claude claude-sonnet-4-6...")
+        em.log(f"Analizando {len(batch)} artículos con Gemini 1.5 Flash...")
 
         analyzer = AnalysisAgent(api_key=api_key)
         analyzed = []
@@ -229,7 +229,7 @@ async def start_run(req: RunRequest):
     topic = req.topic.strip()
     if not topic:
         raise HTTPException(400, "Tema vacío")
-    api_key = req.api_key.strip() or os.environ.get("ANTHROPIC_API_KEY", "")
+    api_key = req.api_key.strip() or os.environ.get("GEMINI_API_KEY", "")
 
     sid = str(uuid.uuid4())
     q: queue.Queue = queue.Queue()

@@ -1,9 +1,9 @@
-"""Analysis Agent — evaluates each paper with Claude using structured criteria."""
+"""Analysis Agent — evaluates each paper using Gemini 1.5 Flash."""
 import json
 import os
-import anthropic
 from rich.console import Console
 from rich.progress import track
+from tools.llm import call_llm
 
 console = Console()
 
@@ -53,18 +53,16 @@ Resumen: {abstract}
 
 
 class AnalysisAgent:
-    """Evaluates paper quality and extracts structured data using Claude."""
+    """Evaluates paper quality and extracts structured data using Gemini."""
 
     name = "Agente Analizador"
     description = (
-        "Experto en epidemiología clínica. Evalúa calidad metodológica, "
-        "nivel de evidencia (Oxford CEBM), PICO y aplicabilidad clínica."
+        "Cirujano pediatra · PICO-S · Nivel evidencia CEBM · "
+        "Calidad metodológica · Grupo etario"
     )
 
     def __init__(self, api_key: str = ""):
-        self.client = anthropic.Anthropic(
-            api_key=api_key or os.environ.get("ANTHROPIC_API_KEY", "")
-        )
+        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
 
     def _analyze_one(self, paper: dict) -> dict:
         prompt = ANALYSIS_PROMPT.format(
@@ -75,18 +73,7 @@ class AnalysisAgent:
             abstract=paper.get("abstract", "Sin resumen disponible")[:3000],
         )
         try:
-            msg = self.client.messages.create(
-                model="claude-sonnet-4-6",
-                max_tokens=1024,
-                system=SYSTEM,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            text = msg.content[0].text.strip()
-            # Strip markdown code fences if present
-            if text.startswith("```"):
-                text = text.split("```")[1]
-                if text.startswith("json"):
-                    text = text[4:]
+            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=1024)
             analysis = json.loads(text)
         except (json.JSONDecodeError, Exception) as e:
             analysis = {
@@ -105,7 +92,8 @@ class AnalysisAgent:
 
     def run(self, papers: list[dict]) -> list[dict]:
         console.print(
-            f"\n[bold cyan]🔬 {self.name}[/bold cyan] — analizando {len(papers)} artículos con Claude\n"
+            f"\n[bold cyan]🔬 {self.name}[/bold cyan] — "
+            f"analizando {len(papers)} artículos con Gemini 1.5 Flash\n"
         )
         analyzed = []
         for paper in track(papers, description="  Analizando artículos..."):
