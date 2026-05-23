@@ -23,56 +23,148 @@ GREEN   = RGBColor(0x22, 0x8B, 0x22)
 SLIDE_W = Inches(13.33)
 SLIDE_H = Inches(7.5)
 
-SYSTEM = """Eres un médico docente experto en presentaciones académicas PowerPoint.
+SYSTEM = """Eres un cirujano pediatra docente experto en presentaciones académicas de cirugía infantil.
 Devuelve SOLO JSON válido con el contenido de las diapositivas. Sin texto extra."""
 
-PPT_CONTENT_PROMPT = """Crea el contenido para una presentación académica médica sobre: "{topic}"
+PPT_CONTENT_PROMPT = """Crea el contenido para una clase académica de CIRUGÍA INFANTIL sobre: "{topic}"
 
 Usa este meta-análisis como base:
 {meta_summary}
 
-Devuelve SOLO un JSON con esta estructura exacta (mínimo 15 slides):
+Devuelve SOLO un JSON con esta estructura exacta (mínimo 18 slides):
 {{
   "titulo_presentacion": "<título>",
-  "subtitulo": "<subtítulo>",
-  "autor": "Revisión Sistemática — Evidencia Actualizada",
+  "subtitulo": "<subtítulo con 'Cirugía Infantil — Evidencia Actualizada'>",
+  "autor": "Revisión Sistemática Basada en Evidencia",
   "fecha": "{fecha}",
   "slides": [
     {{
       "tipo": "titulo",
-      "titulo": "<título de la presentación>",
-      "subtitulo": "<subtítulo>",
-      "badge": "<badge opcional, ej: Meta-análisis 2024>"
+      "titulo": "<título completo>",
+      "subtitulo": "Cirugía Infantil · Revisión Sistemática Basada en Evidencia",
+      "badge": "<badge, ej: Meta-análisis {fecha}>"
     }},
     {{
       "tipo": "objetivos",
-      "titulo": "Objetivos de la Presentación",
-      "items": ["Objetivo 1", "Objetivo 2", "Objetivo 3", "Objetivo 4"]
+      "titulo": "Objetivos de Aprendizaje",
+      "items": [
+        "Conocer la epidemiología y fisiopatología en el paciente pediátrico",
+        "Identificar las manifestaciones clínicas según grupo etario",
+        "Aplicar los criterios diagnósticos y estudios de imagen",
+        "Seleccionar la técnica quirúrgica basada en la evidencia",
+        "Reconocer y manejar las complicaciones quirúrgicas"
+      ]
     }},
     {{
       "tipo": "contenido",
-      "titulo": "<título de la slide>",
-      "subtitulo": "<subtítulo opcional>",
-      "puntos": ["<punto clave 1>", "<punto clave 2>", "<punto clave 3>", "<punto clave 4>"]
+      "titulo": "Epidemiología en Pediatría",
+      "subtitulo": "Incidencia · Grupos etarios · Factores de riesgo",
+      "puntos": ["<dato epidemiológico 1>", "<dato epidemiológico 2>", "<dato 3>", "<dato 4>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Embriología y Fisiopatología",
+      "subtitulo": "Bases anatómicas y mecanismo fisiopatológico",
+      "puntos": ["<mecanismo 1>", "<mecanismo 2>", "<mecanismo 3>", "<mecanismo 4>"]
     }},
     {{
       "tipo": "tabla",
-      "titulo": "<título>",
-      "headers": ["Col1", "Col2", "Col3"],
-      "rows": [["dato1", "dato2", "dato3"], ["dato1", "dato2", "dato3"]]
+      "titulo": "Manifestaciones Clínicas por Grupo Etario",
+      "headers": ["Grupo etario", "Síntoma principal", "Signo clave", "Presentación"],
+      "rows": [
+        ["Neonato", "<síntoma>", "<signo>", "<presentación>"],
+        ["Lactante", "<síntoma>", "<signo>", "<presentación>"],
+        ["Preescolar", "<síntoma>", "<signo>", "<presentación>"],
+        ["Escolar", "<síntoma>", "<signo>", "<presentación>"]
+      ]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Diagnóstico: Clínica y Laboratorio",
+      "subtitulo": "Evaluación inicial del paciente pediátrico",
+      "puntos": ["<criterio diagnóstico 1>", "<criterio 2>", "<laboratorio>", "<score>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Diagnóstico: Imagen",
+      "subtitulo": "Técnica de elección y hallazgos característicos",
+      "puntos": ["<técnica de imagen preferida>", "<hallazgo característico>", "<criterio imagen>", "<limitación>"]
+    }},
+    {{
+      "tipo": "tabla",
+      "titulo": "Diagnóstico Diferencial",
+      "headers": ["Diagnóstico", "Diferencia clave", "Estudio confirmatorio"],
+      "rows": [["<dx1>", "<diferencia>", "<estudio>"], ["<dx2>", "<diferencia>", "<estudio>"], ["<dx3>", "<diferencia>", "<estudio>"]]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Preparación Preoperatoria",
+      "subtitulo": "Estabilización y corrección metabólica",
+      "puntos": ["<resucitación>", "<metas metabólicas>", "<ayuno pediátrico 6-4-2-1>", "<profilaxis antibiótica dosis>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Consideraciones Anestésicas Pediátricas",
+      "subtitulo": "Particularidades del paciente quirúrgico pediátrico",
+      "puntos": ["<tipo anestesia>", "<manejo vía aérea>", "<bloqueo regional>", "<monitorización temperatura>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Técnica Quirúrgica — Abordaje Preferido",
+      "subtitulo": "Paso a paso de la técnica basada en evidencia",
+      "puntos": ["<paso 1>", "<paso 2>", "<paso 3>", "<punto crítico>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Técnica Quirúrgica — Variantes y Alternativas",
+      "subtitulo": "Indicaciones para técnica alternativa",
+      "puntos": ["<indicación alternativa>", "<técnica alternativa>", "<conversión>", "<decisión intraoperatoria>"]
+    }},
+    {{
+      "tipo": "contenido",
+      "titulo": "Cuidados Postoperatorios",
+      "subtitulo": "Manejo en sala y criterios de alta",
+      "puntos": ["<monitorización>", "<analgesia multimodal dosis mg/kg>", "<realimentación>", "<criterios de alta>"]
+    }},
+    {{
+      "tipo": "tabla",
+      "titulo": "Complicaciones Quirúrgicas",
+      "headers": ["Complicación", "Incidencia", "Manejo"],
+      "rows": [
+        ["<complicación 1>", "<incidencia>", "<manejo>"],
+        ["<complicación 2>", "<incidencia>", "<manejo>"],
+        ["<complicación 3>", "<incidencia>", "<manejo>"],
+        ["<complicación 4>", "<incidencia>", "<manejo>"]
+      ]
     }},
     {{
       "tipo": "evidencia",
-      "titulo": "Síntesis de Evidencia",
-      "nivel_global": "<nivel>",
-      "grado": "<grado>",
+      "titulo": "Síntesis de la Evidencia",
+      "nivel_global": "<nivel Oxford CEBM>",
+      "grado": "<grado A-D>",
       "consenso": "<alto/moderado/bajo>",
-      "puntos": ["hallazgo 1", "hallazgo 2", "hallazgo 3"]
+      "puntos": ["<hallazgo evidencia 1>", "<hallazgo 2>", "<hallazgo 3>", "<recomendación técnica>"]
+    }},
+    {{
+      "tipo": "tabla",
+      "titulo": "Principales Estudios — Tabla de Evidencia",
+      "headers": ["Referencia", "Tipo", "N", "Resultado clave", "Nivel evidencia"],
+      "rows": [
+        ["<Autor et al., Año>", "<tipo>", "<n>", "<resultado>", "<nivel>"],
+        ["<Autor et al., Año>", "<tipo>", "<n>", "<resultado>", "<nivel>"],
+        ["<Autor et al., Año>", "<tipo>", "<n>", "<resultado>", "<nivel>"]
+      ]
     }},
     {{
       "tipo": "conclusiones",
       "titulo": "Conclusiones y Recomendaciones",
-      "items": ["Conclusión 1", "Conclusión 2", "Conclusión 3", "Conclusión 4", "Conclusión 5"]
+      "items": [
+        "<conclusión técnica quirúrgica>",
+        "<conclusión diagnóstica>",
+        "<conclusión perioperatoria>",
+        "<área de controversia>",
+        "<perspectivas futuras>"
+      ]
     }},
     {{
       "tipo": "preguntas",
@@ -81,9 +173,9 @@ Devuelve SOLO un JSON con esta estructura exacta (mínimo 15 slides):
   ]
 }}
 
-Incluye slides sobre: introducción, epidemiología, fisiopatología, diagnóstico,
-tratamiento (separado en farmacológico y no farmacológico), evidencia,
-casos clínicos/perlas clínicas, conclusiones. Mínimo 15 slides totales.
+Mínimo 18 slides. Todos los contenidos deben ser específicos de CIRUGÍA INFANTIL
+con datos numéricos reales (incidencias, dosis mg/kg, tasas de complicaciones).
+Fecha: {fecha}.
 """
 
 

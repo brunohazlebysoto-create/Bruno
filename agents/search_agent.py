@@ -31,8 +31,9 @@ class SearchAgent:
 
     name = "Agente Buscador"
     description = (
-        "Experto en búsqueda bibliográfica médica. "
-        "Consulta PubMed, Semantic Scholar y CrossRef simultáneamente."
+        "Experto en búsqueda bibliográfica en cirugía infantil. "
+        "Consulta PubMed, Semantic Scholar y CrossRef simultáneamente "
+        "con filtros pediátricos y quirúrgicos específicos."
     )
 
     def __init__(self, pubmed_api_key: str = "", ss_api_key: str = ""):
@@ -41,13 +42,28 @@ class SearchAgent:
 
     # ------------------------------------------------------------------ #
 
+    # MeSH age group terms for pediatric surgery
+    _PEDS_MESH = (
+        "(infant[MeSH] OR child[MeSH] OR adolescent[MeSH] "
+        "OR \"infant, newborn\"[MeSH] OR pediatric[Title/Abstract] "
+        "OR paediatric[Title/Abstract] OR neonatal[Title/Abstract])"
+    )
+    _SURGERY_MESH = (
+        "(surgery[MeSH] OR surgical[Title/Abstract] OR laparoscop*[Title/Abstract] "
+        "OR thoracoscop*[Title/Abstract] OR operative[Title/Abstract])"
+    )
+
     def _build_queries(self, topic: str) -> dict[str, str]:
-        """Generate database-specific search strings from the topic."""
+        """Generate pediatric-surgery-specific search strings from the topic."""
         base = topic.strip()
+        pubmed_q = (
+            f'({base})[Title/Abstract] AND {self._PEDS_MESH} '
+            f'AND ("last 10 years"[PDat])'
+        )
         return {
-            "pubmed": f'({base})[Title/Abstract] AND ("last 10 years"[PDat])',
-            "ss": base,
-            "crossref": base,
+            "pubmed": pubmed_q,
+            "ss": f"{base} pediatric surgery children",
+            "crossref": f"{base} pediatric children surgical",
         }
 
     def run(self, topic: str, max_per_db: int = 15) -> list[dict]:

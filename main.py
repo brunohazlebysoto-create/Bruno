@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
 """
-Medical Research Multi-Agent System
-====================================
-Orquestador de agentes expertos en medicina que:
-  1. Buscan papers en PubMed, Semantic Scholar y CrossRef
-  2. Analizan cada artículo con criterios de MBE
-  3. Realizan meta-análisis narrativo/cuantitativo
-  4. Generan apunte médico completo en Markdown
-  5. Crean presentación PowerPoint académica
+Sistema Multi-Agente de Investigación en Cirugía Infantil
+==========================================================
+Orquestador de 5 agentes expertos en cirugía pediátrica que:
+  1. Buscan papers en PubMed, Semantic Scholar y CrossRef (con filtros pediátricos)
+  2. Analizan cada artículo con criterios de MBE quirúrgica pediátrica
+  3. Realizan meta-análisis con perspectiva de cirugía infantil
+  4. Generan apunte clínico completo con técnica quirúrgica y cuidados pediátricos
+  5. Crean presentación PowerPoint académica de cirugía infantil
 
-Uso:
-    python main.py "diabetes tipo 2 tratamiento farmacológico"
-    python main.py --topic "hipertensión arterial" --max-papers 30 --output ./mi_salida
+Temas de ejemplo:
+    python main.py "apendicitis aguda laparoscopia pediátrica"
+    python main.py "invaginación intestinal reducción neumática"
+    python main.py "estenosis hipertrófica del píloro piloromiotomía"
+    python main.py "enfermedad de Hirschsprung pull-through"
+    python main.py "hernia inguinal lactantes reparación laparoscópica"
+    python main.py "atresia esofágica reparación toracoscópica"
+    python main.py "gastrosquisis cierre primario"
+    python main.py "malrotación intestinal procedimiento de Ladd"
+    python main.py "criptorquidia orquiopexia"
+    python main.py --topic "estenosis ureteropélvica pieloplastia" --max-papers 25
 """
 import argparse
 import json
@@ -39,8 +47,9 @@ def banner():
     console.print()
     console.print(Panel(
         Text.from_markup(
-            "[bold cyan]🏥 Sistema Multi-Agente de Investigación Médica[/bold cyan]\n"
-            "[dim]PubMed · Semantic Scholar · CrossRef · Meta-análisis · Apuntes · PowerPoint[/dim]"
+            "[bold cyan]🔪 Sistema Multi-Agente de Investigación en Cirugía Infantil[/bold cyan]\n"
+            "[dim]PubMed · Semantic Scholar · CrossRef · Análisis PICO · Meta-análisis · Apuntes · PowerPoint[/dim]\n"
+            "[dim]Apendicitis · Invaginación · Píloro · Hirschsprung · Hernia inguinal · Atresia esofágica · y más[/dim]"
         ),
         border_style="cyan",
         padding=(1, 4),
@@ -172,7 +181,12 @@ def main():
     banner()
 
     if not topic:
-        console.print("[yellow]Ingresa el tema médico a investigar:[/yellow]")
+        console.print("[yellow]Ingresa el tema de cirugía infantil a investigar:[/yellow]")
+        console.print(
+            "[dim]Ejemplos: 'apendicitis aguda pediátrica', 'invaginación intestinal', "
+            "'estenosis hipertrófica del píloro', 'hernia inguinal', "
+            "'enfermedad de Hirschsprung'[/dim]"
+        )
         topic = input("→ ").strip()
         if not topic:
             console.print("[red]Tema vacío. Saliendo.[/red]")
