@@ -323,6 +323,23 @@ header p{color:var(--muted);font-size:.92rem;margin-top:6px}
 }
 .provider-link:hover{text-decoration:underline}
 
+/* ── Gemini mode toggle ──────────────────────────────────────────────────── */
+.mode-toggle{display:flex;gap:10px;flex-direction:column}
+.mode-btn{
+  display:flex;flex-direction:column;align-items:flex-start;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:8px;padding:10px 14px;cursor:pointer;
+  transition:all .18s;text-align:left;width:100%;
+}
+.mode-btn:hover{border-color:var(--muted);background:var(--bg)}
+.mode-btn.active{
+  border-color:#1a6bc4;
+  background:rgba(26,107,196,.12);
+  box-shadow:0 0 0 1px rgba(26,107,196,.3);
+}
+.mode-name{font-weight:600;font-size:.9rem;color:var(--text)}
+.mode-tag{font-size:.75rem;color:var(--muted);margin-top:2px}
+
 /* ── Scrollbar ──────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:var(--bg)}
@@ -381,12 +398,27 @@ header p{color:var(--muted);font-size:.92rem;margin-top:6px}
             <span class="provider-badge free">GRATIS</span>
             <span class="provider-name">Gemini</span>
           </div>
-          <div class="provider-model">Gemini 1.5 Flash</div>
-          <div class="provider-note">Tier gratuito de Google</div>
+          <div class="provider-model" id="gemini-card-model">Gemini 2.5 Flash</div>
+          <div class="provider-note">Cuota gratuita de Google · Sin cobro</div>
           <a class="provider-link" href="https://aistudio.google.com/apikey" target="_blank"
              onclick="event.stopPropagation()">→ Obtener key gratis</a>
         </div>
 
+      </div>
+    </div>
+
+    <!-- ── Gemini mode panel (visible only when Gemini selected) ── -->
+    <div class="form-group gemini-panel" id="gemini-mode-panel" style="display:none">
+      <label>Modelo Gemini <span id="gemini-mode-badge" class="provider-badge free" style="font-size:.7rem;padding:2px 7px;margin-left:6px;text-transform:uppercase">SIN COSTO</span></label>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-free" onclick="selectMode('free')">
+          <span class="mode-name">✦ Gemini 2.5 Flash</span>
+          <span class="mode-tag">Cuota gratuita — 15 req/min, sin cobro de tokens</span>
+        </button>
+        <button class="mode-btn" id="mode-pro" onclick="selectMode('pro')">
+          <span class="mode-name">⚡ Gemini 1.5 Pro</span>
+          <span class="mode-tag">Mayor capacidad — cobra tokens (~$1.25/M)</span>
+        </button>
       </div>
     </div>
 
@@ -492,12 +524,18 @@ header p{color:var(--muted);font-size:.92rem;margin-top:6px}
 </div><!-- /wrapper -->
 
 <script>
-// ── Provider selector ─────────────────────────────────────────────────────
+// ── Provider & mode selector ──────────────────────────────────────────────
 let selectedProvider = "groq";
+let selectedMode     = "free";
 
 const PROVIDER_META = {
   groq:   { label:"API Key — Groq",   hint:"console.groq.com → Free → API Keys",    ph:"gsk_…" },
   gemini: { label:"API Key — Gemini", hint:"aistudio.google.com → Get API key",      ph:"AIza…" },
+};
+
+const MODE_MODEL = {
+  free: "Gemini 2.5 Flash",
+  pro:  "Gemini 1.5 Pro",
 };
 
 function selectProvider(p){
@@ -509,6 +547,24 @@ function selectProvider(p){
   $("key-hint").textContent = `(${m.hint})`;
   $("api-key-input").placeholder = m.ph;
   $("api-key-input").value = "";
+  // Show Gemini mode panel only when Gemini is selected
+  $("gemini-mode-panel").style.display = (p === "gemini") ? "block" : "none";
+}
+
+function selectMode(m){
+  selectedMode = m;
+  document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+  $(`mode-${m}`).classList.add("active");
+  // Update card label and badge
+  $("gemini-card-model").textContent = MODE_MODEL[m];
+  const badge = $("gemini-mode-badge");
+  if(m === "free"){
+    badge.textContent = "SIN COSTO";
+    badge.className   = "provider-badge free";
+  } else {
+    badge.textContent = "COBRA TOKENS";
+    badge.className   = "provider-badge paid";
+  }
 }
 
 // ── State ──────────────────────────────────────────────────────────────────
@@ -575,7 +631,7 @@ async function startPipeline(){
     res  = await fetch("/api/run",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({topic, max_papers:maxPap, api_key:apiKey, provider:selectedProvider})
+      body: JSON.stringify({topic, max_papers:maxPap, api_key:apiKey, provider:selectedProvider, mode:selectedMode})
     });
     body = await res.json();
   } catch(e){ showError("No se pudo conectar con el servidor: "+e.message); return; }

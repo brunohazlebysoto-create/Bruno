@@ -441,9 +441,10 @@ class PPTAgent:
         "Genera diapositivas profesionales con diseño médico moderno."
     )
 
-    def __init__(self, api_key: str = "", provider: str = "groq"):
+    def __init__(self, api_key: str = "", provider: str = "gemini", mode: str = "free"):
         self.api_key = api_key or os.environ.get("GROQ_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
         self.provider = provider
+        self.mode = mode
 
     def _get_slide_content(self, topic: str, meta: dict) -> dict:
         import datetime
@@ -463,7 +464,7 @@ class PPTAgent:
             meta_summary=meta_summary,
             fecha=fecha,
         )
-        text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=6000, provider=self.provider)
+        text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=6000, provider=self.provider, mode=self.mode)
         return json.loads(text)
 
     def run(self, topic: str, meta: dict, output_path: str) -> str:

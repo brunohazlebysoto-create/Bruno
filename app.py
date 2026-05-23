@@ -51,7 +51,7 @@ def _emit(q: queue.Queue, event_type: str, **kw):
 # ── Pipeline (runs in thread) ────────────────────────────────────────────── #
 
 def run_pipeline(session_id: str, topic: str, max_papers: int,
-                 api_key: str, provider: str, q: queue.Queue):
+                 api_key: str, provider: str, mode: str, q: queue.Queue):
     try:
         ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
         slug = topic[:35].lower().replace(" ", "_").replace("/", "-")
@@ -97,7 +97,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em = AgentEmitter(q, "Analizador")
         em.log(f"Analizando {len(batch)} artículos con {provider.upper()}......")
 
-        analyzer = AnalysisAgent(api_key=api_key, provider=provider)
+        analyzer = AnalysisAgent(api_key=api_key, provider=provider, mode=mode)
         analyzed = []
         for i, paper in enumerate(batch, 1):
             result = analyzer._analyze_one(paper)
@@ -127,7 +127,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em.log("Evaluando heterogeneidad, sesgos de publicación y distribución etaria...")
         em.log("Comparando técnicas quirúrgicas (laparoscópica vs abierta vs alternativas)...")
 
-        meta_agent = MetaAnalysisAgent(api_key=api_key, provider=provider)
+        meta_agent = MetaAnalysisAgent(api_key=api_key, provider=provider, mode=mode)
         meta = meta_agent.run(analyzed, topic)
 
         nivel_g = meta.get("nivel_evidencia_global", "N/A")
@@ -157,7 +157,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em.log("Secciones: Epidemiología · Embriología · Clínica por grupo etario · "
                "Diagnóstico · Técnica quirúrgica · Anestesia · Complicaciones...")
 
-        notes_agent = NotesAgent(api_key=api_key, provider=provider)
+        notes_agent = NotesAgent(api_key=api_key, provider=provider, mode=mode)
         notes_md = notes_agent.run(topic, meta, analyzed)
         notes_path = out / "04_apunte_medico.md"
         notes_path.write_text(notes_md, encoding="utf-8")
@@ -179,7 +179,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em.log("Planificando: Título · Objetivos · Epidemiología · Fisiopatología · "
                "Diagnóstico · Técnica quirúrgica · Complicaciones · Evidencia · Conclusiones...")
 
-        ppt_agent = PPTAgent(api_key=api_key)
+        ppt_agent = PPTAgent(api_key=api_key, provider=provider, mode=mode)
         ppt_file  = str(out / "05_presentacion.pptx")
         ppt_agent.run(topic, meta, ppt_file)
 
@@ -219,6 +219,7 @@ class RunRequest(BaseModel):
     max_papers: int = 15
     api_key: str = ""
     provider: str = "groq"   # "groq" | "gemini"
+    mode: str = "free"        # "free" → gemini-2.0-flash | "pro" → gemini-1.5-pro
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -239,7 +240,7 @@ async def start_run(req: RunRequest):
     sessions[sid] = {"queue": q, "files": {}, "status": "running"}
 
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(executor, run_pipeline, sid, topic, req.max_papers, api_key, req.provider, q)
+    loop.run_in_executor(executor, run_pipeline, sid, topic, req.max_papers, api_key, req.provider, req.mode, q)
 
     return {"session_id": sid}
 
