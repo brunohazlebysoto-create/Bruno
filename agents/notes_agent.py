@@ -1,8 +1,9 @@
-"""Notes Agent — generates pediatric surgery notes using Gemini 1.5 Flash."""
+"""Notes Agent — generates pediatric surgery notes and saves as Word (.docx)."""
 import json
 import os
 from rich.console import Console
 from tools.llm import call_llm
+from tools.md_to_docx import md_to_docx
 
 console = Console()
 
@@ -118,7 +119,8 @@ class NotesAgent:
         self.provider = provider
         self.mode = mode
 
-    def run(self, topic: str, meta: dict, papers: list[dict]) -> str:
+    def run(self, topic: str, meta: dict, papers: list[dict],
+            docx_path: str = "") -> str:
         console.print(
             f"\n[bold cyan]📝 {self.name}[/bold cyan] — "
             f"redactando apunte: [italic]{topic}[/italic]\n"
@@ -127,7 +129,11 @@ class NotesAgent:
         prompt = NOTES_PROMPT.format(topic=topic, meta_json=meta_json)
 
         with console.status("  Generando apunte de cirugía infantil..."):
-            notes = call_llm(SYSTEM, prompt, self.api_key, max_tokens=8192, temperature=0.4, provider=self.provider, mode=self.mode)
+            notes_md = call_llm(SYSTEM, prompt, self.api_key, max_tokens=8192,
+                                temperature=0.4, provider=self.provider, mode=self.mode)
+
+        if docx_path:
+            md_to_docx(notes_md, docx_path)
 
         console.print("  [bold]✓ Apunte generado[/bold]\n")
-        return notes
+        return notes_md

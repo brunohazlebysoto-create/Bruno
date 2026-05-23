@@ -29,6 +29,10 @@ FREE_RATE_PAUSE = 5  # segundos
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL = "llama-3.3-70b-versatile"
 
+# ── Cerebras (gratis, muy rápido) ─────────────────────────────────────────── #
+CEREBRAS_URL   = "https://api.cerebras.ai/v1/chat/completions"
+CEREBRAS_MODEL = "llama3.1-70b"
+
 
 def _strip(text: str) -> str:
     return _FENCE.sub("", text).strip()
@@ -60,14 +64,15 @@ def _call_gemini(system: str, prompt: str, api_key: str,
     return result
 
 
-def _call_groq(system: str, prompt: str, api_key: str,
-               max_tokens: int, temperature: float) -> str:
+def _call_openai_compat(url: str, model: str, system: str, prompt: str,
+                        api_key: str, max_tokens: int,
+                        temperature: float, name: str) -> str:
     r = requests.post(
-        GROQ_URL,
+        url,
         headers={"Authorization": f"Bearer {api_key}",
                  "Content-Type": "application/json"},
         json={
-            "model": GROQ_MODEL,
+            "model": model,
             "messages": [{"role": "system", "content": system},
                          {"role": "user",   "content": prompt}],
             "max_tokens":  max_tokens,
@@ -76,8 +81,20 @@ def _call_groq(system: str, prompt: str, api_key: str,
         timeout=120,
     )
     if r.status_code != 200:
-        raise RuntimeError(f"Groq error {r.status_code}: {r.text[:300]}")
+        raise RuntimeError(f"{name} error {r.status_code}: {r.text[:300]}")
     return _strip(r.json()["choices"][0]["message"]["content"])
+
+
+def _call_groq(system: str, prompt: str, api_key: str,
+               max_tokens: int, temperature: float) -> str:
+    return _call_openai_compat(GROQ_URL, GROQ_MODEL, system, prompt,
+                               api_key, max_tokens, temperature, "Groq")
+
+
+def _call_cerebras(system: str, prompt: str, api_key: str,
+                   max_tokens: int, temperature: float) -> str:
+    return _call_openai_compat(CEREBRAS_URL, CEREBRAS_MODEL, system, prompt,
+                               api_key, max_tokens, temperature, "Cerebras")
 
 
 def call_llm(system: str, prompt: str, api_key: str,
@@ -91,6 +108,8 @@ def call_llm(system: str, prompt: str, api_key: str,
     """
     if provider == "groq":
         return _call_groq(system, prompt, api_key, max_tokens, temperature)
+    if provider == "cerebras":
+        return _call_cerebras(system, prompt, api_key, max_tokens, temperature)
     return _call_gemini(system, prompt, api_key, max_tokens, temperature, mode)
 
 
@@ -98,4 +117,6 @@ def model_label(provider: str, mode: str) -> str:
     """Human-readable model name for UI display."""
     if provider == "groq":
         return f"Groq · {GROQ_MODEL}"
+    if provider == "cerebras":
+        return f"Cerebras · {CEREBRAS_MODEL}"
     return f"Gemini · {GEMINI_MODELS.get(mode, 'gemini-2.5-flash')}"

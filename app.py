@@ -158,9 +158,8 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
                "Diagnóstico · Técnica quirúrgica · Anestesia · Complicaciones...")
 
         notes_agent = NotesAgent(api_key=api_key, provider=provider, mode=mode)
-        notes_md = notes_agent.run(topic, meta, analyzed)
-        notes_path = out / "04_apunte_medico.md"
-        notes_path.write_text(notes_md, encoding="utf-8")
+        docx_path = str(out / "04_apunte_medico.docx")
+        notes_md = notes_agent.run(topic, meta, analyzed, docx_path=docx_path)
 
         words = len(notes_md.split())
         em.success(f"Apunte generado · {words:,} palabras")
@@ -192,13 +191,13 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
 
         # ── Done ───────────────────────────────────────────────────────────── #
         sessions[session_id]["files"] = {
-            "apunte_medico.md":    str(notes_path),
+            "apunte_medico.docx":  docx_path,
             "presentacion.pptx":   str(out / "05_presentacion.pptx"),
             "meta_analysis.json":  str(out / "03_meta_analysis.json"),
         }
         sessions[session_id]["status"] = "done"
         _emit(q, "pipeline_complete", files=[
-            {"label": "📝 Apunte Médico",           "filename": "apunte_medico.md",   "ext": "md"},
+            {"label": "📝 Apunte Médico (Word)",    "filename": "apunte_medico.docx", "ext": "docx"},
             {"label": "🎨 Presentación PowerPoint", "filename": "presentacion.pptx",  "ext": "pptx"},
             {"label": "📊 Meta-análisis (JSON)",    "filename": "meta_analysis.json", "ext": "json"},
         ])

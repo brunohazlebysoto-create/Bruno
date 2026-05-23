@@ -380,7 +380,7 @@ header p{color:var(--muted);font-size:.92rem;margin-top:6px}
     <!-- ── Provider selector ── -->
     <div class="form-group">
       <label>Proveedor de IA</label>
-      <div class="provider-grid">
+      <div class="provider-grid" style="grid-template-columns:1fr 1fr 1fr">
 
         <div class="provider-card selected" id="card-groq" onclick="selectProvider('groq')">
           <div class="provider-top">
@@ -390,6 +390,17 @@ header p{color:var(--muted);font-size:.92rem;margin-top:6px}
           <div class="provider-model">Llama 3.3 · 70B</div>
           <div class="provider-note">Solo registro, sin tarjeta</div>
           <a class="provider-link" href="https://console.groq.com/keys" target="_blank"
+             onclick="event.stopPropagation()">→ Obtener key gratis</a>
+        </div>
+
+        <div class="provider-card" id="card-cerebras" onclick="selectProvider('cerebras')">
+          <div class="provider-top">
+            <span class="provider-badge free">GRATIS</span>
+            <span class="provider-name">Cerebras</span>
+          </div>
+          <div class="provider-model">Llama 3.1 · 70B</div>
+          <div class="provider-note">El más rápido · Sin tarjeta</div>
+          <a class="provider-link" href="https://cloud.cerebras.ai" target="_blank"
              onclick="event.stopPropagation()">→ Obtener key gratis</a>
         </div>
 
@@ -529,8 +540,9 @@ let selectedProvider = "groq";
 let selectedMode     = "free";
 
 const PROVIDER_META = {
-  groq:   { label:"API Key — Groq",   hint:"console.groq.com → Free → API Keys",    ph:"gsk_…" },
-  gemini: { label:"API Key — Gemini", hint:"aistudio.google.com → Get API key",      ph:"AIza…" },
+  groq:     { label:"API Key — Groq",      hint:"console.groq.com → Free → API Keys",       ph:"gsk_…"  },
+  cerebras: { label:"API Key — Cerebras",  hint:"cloud.cerebras.ai → API Keys",              ph:"csk-…"  },
+  gemini:   { label:"API Key — Gemini",    hint:"aistudio.google.com → Get API key",         ph:"AIza…"  },
 };
 
 const MODE_MODEL = {
@@ -571,7 +583,7 @@ function selectMode(m){
 const AGENT_ORDER = ["Buscador","Analizador","Meta-Analista","Redactor","Presentador"];
 const STEP_IDX    = {"Buscador":0,"Analizador":1,"Meta-Analista":2,"Redactor":3,"Presentador":4};
 const DL_COLORS   = {
-  "apunte_medico.md":   {color:"#2dc653",rgb:"45,198,83"},
+  "apunte_medico.docx": {color:"#2dc653",rgb:"45,198,83"},
   "presentacion.pptx":  {color:"#ff4d6d",rgb:"255,77,109"},
   "meta_analysis.json": {color:"#f77f00",rgb:"247,127,0"},
 };

@@ -173,7 +173,15 @@ Devuelve SOLO un JSON con esta estructura exacta (mínimo 18 slides):
   ]
 }}
 
-Mínimo 18 slides. Todos los contenidos deben ser específicos de CIRUGÍA INFANTIL
+IMPORTANTE: Genera MÍNIMO 25 slides. Expande cada sección con más detalle:
+- Añade una slide de "Anatomía Quirúrgica" con puntos de referencia clave
+- Añade una slide de "Tratamiento No Quirúrgico / Manejo Conservador"
+- Añade una slide de "Seguimiento a Largo Plazo y Pronóstico"
+- Añade una slide de "Casos Especiales / Situaciones Difíciles"
+- Añade una slide de "Perlas Clínicas — 5 puntos que no debes olvidar"
+- Añade una slide de "Errores Comunes a Evitar"
+- Amplía la tabla de evidencia con al menos 6 estudios
+Todos los contenidos deben ser específicos de CIRUGÍA INFANTIL
 con datos numéricos reales (incidencias, dosis mg/kg, tasas de complicaciones).
 Fecha: {fecha}.
 """
