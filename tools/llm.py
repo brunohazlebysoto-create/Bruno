@@ -2,24 +2,28 @@
 
 Gemini modes
 ------------
-  free  → gemini-2.5-flash       gratis, cuota gratuita, sin cobro de tokens
-  pro   → gemini-1.5-pro         cobra tokens (~$1.25/M input tokens)
+  free  → gemini-2.5-flash   cuota gratuita, 15 RPM; pausa 5 s entre llamadas
+  pro   → gemini-1.5-pro     sin pausas, cobra tokens (~$1.25/M input tokens)
 
 Groq mode
 ---------
   groq  → llama-3.3-70b-versatile  gratis con registro, sin tarjeta
 """
 import re
+import time
 import requests
 
 _FENCE = re.compile(r'^```(?:json)?\s*|\s*```$', re.MULTILINE)
 
 # ── Gemini model map ──────────────────────────────────────────────────────── #
 GEMINI_MODELS = {
-    "free": "gemini-2.5-flash",       # cuota gratuita, sin cobro de tokens
-    "pro":  "gemini-1.5-pro",         # cobra tokens
+    "free": "gemini-2.5-flash",   # cuota gratuita, sin cobro de tokens
+    "pro":  "gemini-1.5-pro",     # cobra tokens
 }
 GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+
+# Pausa entre llamadas en modo free para mantenerse bajo los 15 RPM de Google
+FREE_RATE_PAUSE = 5  # segundos
 
 # ── Groq ──────────────────────────────────────────────────────────────────── #
 GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions"
@@ -49,7 +53,11 @@ def _call_gemini(system: str, prompt: str, api_key: str,
     )
     if r.status_code != 200:
         raise RuntimeError(f"Gemini error {r.status_code}: {r.text[:300]}")
-    return _strip(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+    result = _strip(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+    # Pausa estratégica en modo free para respetar el límite de 15 RPM
+    if mode == "free":
+        time.sleep(FREE_RATE_PAUSE)
+    return result
 
 
 def _call_groq(system: str, prompt: str, api_key: str,
@@ -77,8 +85,8 @@ def call_llm(system: str, prompt: str, api_key: str,
              provider: str = "gemini", mode: str = "free") -> str:
     """
     provider: "gemini" | "groq"
-    mode:     "free"   → gemini-2.0-flash (sin costo)
-              "pro"    → gemini-1.5-pro    (cobra tokens)
+    mode:     "free"  → gemini-2.5-flash, pausa 5 s (100% gratis)
+              "pro"   → gemini-1.5-pro,   sin pausas (cobra tokens)
               (ignorado cuando provider="groq")
     """
     if provider == "groq":
@@ -90,4 +98,4 @@ def model_label(provider: str, mode: str) -> str:
     """Human-readable model name for UI display."""
     if provider == "groq":
         return f"Groq · {GROQ_MODEL}"
-    return f"Gemini · {GEMINI_MODELS.get(mode, 'gemini-2.0-flash')}"
+    return f"Gemini · {GEMINI_MODELS.get(mode, 'gemini-2.5-flash')}"
