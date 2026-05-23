@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cirugía Infantil · Sistema Multi-Agente</title>
+<style>
+/* ── Reset & base ───────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --surface2:  #1c2128;
+  --border:    #30363d;
+  --border2:   #21262d;
+  --text:      #e6edf3;
+  --muted:     #7d8590;
+  --accent:    #1a6bc4;
+
+  --c-search:  #00b4d8;
+  --c-analyze: #9d4edd;
+  --c-meta:    #f77f00;
+  --c-notes:   #2dc653;
+  --c-ppt:     #ff4d6d;
+
+  --radius: 10px;
+  --font:   'Segoe UI', system-ui, sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.6;
+}
+a{color:var(--accent)}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.wrapper{max-width:900px;margin:0 auto;padding:0 20px 60px}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header{
+  background:linear-gradient(135deg,#0a1628 0%,#0d2044 50%,#0a1628 100%);
+  border-bottom:1px solid var(--border);
+  padding:28px 0 20px;
+  margin-bottom:36px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 100% at 50% 0%,
+    rgba(26,107,196,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.header-icon{font-size:2.6rem;display:block;margin-bottom:6px}
+header h1{
+  font-size:1.75rem;font-weight:700;letter-spacing:-.02em;
+  background:linear-gradient(135deg,#e6edf3 0%,#00b4d8 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+header p{color:var(--muted);font-size:.92rem;margin-top:6px}
+
+/* ── Card ───────────────────────────────────────────────────────────────── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:20px;
+}
+
+/* ── Form ───────────────────────────────────────────────────────────────── */
+.form-group{margin-bottom:16px}
+.form-group label{
+  display:block;font-size:.82rem;font-weight:600;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  margin-bottom:8px;
+}
+.form-group input,.form-group select{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:var(--font);
+  font-size:1rem;padding:11px 14px;transition:border-color .2s,box-shadow .2s;
+  outline:none;
+}
+.form-group input:focus,.form-group select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(26,107,196,.2);
+}
+.form-group input::placeholder{color:var(--muted)}
+
+.form-row{display:grid;grid-template-columns:1fr 180px;gap:14px}
+@media(max-width:580px){.form-row{grid-template-columns:1fr}}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent);color:#fff;
+  font-family:var(--font);font-size:.95rem;font-weight:600;
+  border:none;border-radius:8px;cursor:pointer;
+  padding:12px 22px;transition:background .2s,transform .1s,box-shadow .2s;
+  text-decoration:none;
+}
+.btn:hover{background:#1458a3;box-shadow:0 0 16px rgba(26,107,196,.4)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{background:#2a3040;color:var(--muted);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{font-size:.82rem;padding:7px 14px}
+.btn-outline{
+  background:transparent;border:1px solid var(--border);color:var(--text);
+}
+.btn-outline:hover{background:var(--surface2);border-color:var(--muted)}
+
+/* ── Quick topics ───────────────────────────────────────────────────────── */
+.topics-label{font-size:.78rem;color:var(--muted);font-weight:600;
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.topics-pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:20px;padding:5px 12px;font-size:.8rem;
+  color:var(--muted);cursor:pointer;transition:.18s;
+  white-space:nowrap;
+}
+.pill:hover{border-color:var(--accent);color:var(--text);
+  background:rgba(26,107,196,.15)}
+
+/* ── Pipeline steps ─────────────────────────────────────────────────────── */
+.pipeline{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;margin:28px 0;
+}
+.step{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  min-width:90px;position:relative;
+}
+.step::after{
+  content:'';position:absolute;top:19px;left:calc(50% + 22px);
+  width:calc(100% - 44px);height:2px;
+  background:var(--border);z-index:0;
+}
+.step:last-child::after{display:none}
+.step-dot{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;background:var(--surface2);border:2px solid var(--border);
+  transition:.3s;position:relative;z-index:1;
+}
+.step-label{font-size:.72rem;color:var(--muted);font-weight:500;text-align:center}
+.step.active .step-dot{
+  border-color:var(--step-color,var(--accent));
+  background:rgba(var(--step-rgb,26,107,196),.18);
+  box-shadow:0 0 14px rgba(var(--step-rgb,26,107,196),.35);
+  animation:pulse-step 1.4s ease-in-out infinite;
+}
+.step.done .step-dot{
+  border-color:var(--step-color);
+  background:rgba(var(--step-rgb),.25);
+  box-shadow:0 0 8px rgba(var(--step-rgb),.3);
+}
+.step.done::after{background:var(--step-color);opacity:.5}
+.step-dot .check{display:none;font-size:.8rem}
+.step.done .step-dot .icon{display:none}
+.step.done .step-dot .check{display:block}
+@keyframes pulse-step{
+  0%,100%{box-shadow:0 0 6px rgba(var(--step-rgb),.25)}
+  50%{box-shadow:0 0 18px rgba(var(--step-rgb),.55)}
+}
+
+/* ── Conversation area ──────────────────────────────────────────────────── */
+#conversation{display:flex;flex-direction:column;gap:16px}
+
+/* ── Agent card ─────────────────────────────────────────────────────────── */
+.agent-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  animation:slide-up .35s ease-out;
+}
+@keyframes slide-up{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.agent-header{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 18px;border-bottom:1px solid var(--border2);
+  background:var(--surface2);
+}
+.agent-icon-wrap{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.15rem;
+  flex-shrink:0;border:2px solid transparent;
+  transition:.3s;
+}
+.agent-name{font-weight:700;font-size:.97rem}
+.agent-desc{font-size:.77rem;color:var(--muted);margin-top:1px}
+.agent-status{
+  margin-left:auto;display:flex;align-items:center;gap:7px;
+  font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap;
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--muted);
+}
+.status-dot.running{
+  background:var(--agent-color);
+  animation:blink 1s ease-in-out infinite;
+}
+.status-dot.done{background:#2dc653}
+.status-dot.error{background:#ff4d6d}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.agent-body{padding:14px 18px;display:flex;flex-direction:column;gap:5px}
+
+/* ── Log line ───────────────────────────────────────────────────────────── */
+.log-line{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:.84rem;line-height:1.45;
+  animation:fade-in .25s ease;
+}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+.log-icon{flex-shrink:0;margin-top:1px;font-size:.85rem}
+.log-text{color:var(--muted)}
+.log-line.success .log-text{color:#c3e6cb}
+.log-line.warning .log-text{color:#ffe0a0}
+.log-line.error   .log-text{color:#ffb3b3}
+.log-line.success .log-icon::before{content:'✓';color:#2dc653}
+.log-line.warning .log-icon::before{content:'⚠';color:#f77f00}
+.log-line.error   .log-icon::before{content:'✗';color:#ff4d6d}
+.log-line.info    .log-icon::before{content:'→';color:var(--muted)}
+
+/* thinking dots */
+.thinking{
+  display:flex;align-items:center;gap:5px;padding:4px 0;
+}
+.thinking span{
+  width:6px;height:6px;border-radius:50%;
+  animation:dot-bounce .9s ease-in-out infinite;
+}
+.thinking span:nth-child(2){animation-delay:.15s}
+.thinking span:nth-child(3){animation-delay:.3s}
+@keyframes dot-bounce{
+  0%,60%,100%{transform:translateY(0);opacity:.5}
+  30%{transform:translateY(-5px);opacity:1}
+}
+
+/* ── Agent summary ──────────────────────────────────────────────────────── */
+.agent-summary{
+  margin:10px 18px 14px;padding:10px 14px;
+  border-radius:7px;font-size:.84rem;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+  animation:fade-in .3s ease;
+}
+
+/* ── Downloads ──────────────────────────────────────────────────────────── */
+#download-section{display:none}
+#download-section.visible{
+  display:block;
+  animation:slide-up .4s ease-out;
+}
+.downloads-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.dl-btn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  padding:18px 14px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--surface2);
+  color:var(--text);text-decoration:none;cursor:pointer;
+  transition:.2s;font-family:var(--font);
+}
+.dl-btn:hover{border-color:var(--btn-color,var(--accent));
+  background:rgba(var(--btn-rgb,26,107,196),.12);
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,0,0,.3);}
+.dl-btn .dl-icon{font-size:2rem}
+.dl-btn .dl-name{font-weight:700;font-size:.92rem}
+.dl-btn .dl-ext{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* ── Error banner ───────────────────────────────────────────────────────── */
+.error-banner{
+  background:rgba(255,77,109,.12);border:1px solid rgba(255,77,109,.4);
+  border-radius:var(--radius);padding:14px 18px;color:#ffb3b3;
+  font-size:.9rem;display:none;margin-bottom:16px;
+}
+.error-banner.visible{display:flex;align-items:flex-start;gap:10px}
+
+/* ── Success banner ─────────────────────────────────────────────────────── */
+.done-banner{
+  background:rgba(45,198,83,.1);border:1px solid rgba(45,198,83,.35);
+  border-radius:var(--radius);padding:14px 18px;
+  color:#b3e6c5;font-size:.9rem;font-weight:600;
+  display:none;margin-bottom:16px;align-items:center;gap:10px;
+}
+.done-banner.visible{display:flex}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrapper" style="position:relative">
+    <span class="header-icon">🔪</span>
+    <h1>Cirugía Infantil · Sistema Multi-Agente</h1>
+    <p>5 agentes expertos buscan papers, los analizan, sintetizan la evidencia<br>
+       y generan un apunte completo + presentación PowerPoint académica</p>
+  </div>
+</header>
+
+<div class="wrapper">
+
+  <!-- ── Error / Done banners ── -->
+  <div class="error-banner" id="error-banner">
+    <span>⚠️</span><span id="error-text"></span>
+  </div>
+  <div class="done-banner" id="done-banner">
+    <span>✅</span>
+    <span>Pipeline completado. Descarga tus archivos a continuación.</span>
+  </div>
+
+  <!-- ── Form ── -->
+  <div class="card">
+    <div class="form-group">
+      <label>Tema de Cirugía Infantil</label>
+      <input id="topic-input" type="text"
+        placeholder="ej: apendicitis aguda laparoscópica pediátrica…"/>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label>Anthropic API Key</label>
+        <input id="api-key-input" type="password"
+          placeholder="sk-ant-…  (o configura ANTHROPIC_API_KEY)"/>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>Máx. artículos</label>
+        <select id="max-papers">
+          <option value="10">10 artículos</option>
+          <option value="15" selected>15 artículos</option>
+          <option value="20">20 artículos</option>
+          <option value="30">30 artículos</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:18px">
+      <button class="btn btn-full" id="run-btn" onclick="startPipeline()">
+        <span>🚀</span> Generar Revisión Completa
+      </button>
+    </div>
+
+    <div style="margin-top:18px">
+      <p class="topics-label">Temas frecuentes</p>
+      <div class="topics-pills">
+        <span class="pill" onclick="setTopic(this)">Apendicitis aguda pediátrica</span>
+        <span class="pill" onclick="setTopic(this)">Invaginación intestinal</span>
+        <span class="pill" onclick="setTopic(this)">Estenosis hipertrófica del píloro</span>
+        <span class="pill" onclick="setTopic(this)">Enfermedad de Hirschsprung</span>
+        <span class="pill" onclick="setTopic(this)">Hernia inguinal en lactantes</span>
+        <span class="pill" onclick="setTopic(this)">Atresia esofágica reparación toracoscópica</span>
+        <span class="pill" onclick="setTopic(this)">Gastrosquisis cierre primario</span>
+        <span class="pill" onclick="setTopic(this)">Malrotación intestinal procedimiento de Ladd</span>
+        <span class="pill" onclick="setTopic(this)">Criptorquidia orquiopexia</span>
+        <span class="pill" onclick="setTopic(this)">Estenosis ureteropélvica pieloplastia</span>
+        <span class="pill" onclick="setTopic(this)">Colelitiasis colecistectomía pediátrica</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pipeline steps ── -->
+  <div class="pipeline" id="pipeline" style="display:none">
+    <div class="step" id="step-0"
+         style="--step-color:#00b4d8;--step-rgb:0,180,216">
+      <div class="step-dot">
+        <span class="icon">🔍</span><span class="check">✓</span>
+      </div>
+      <span class="step-label">Buscador</span>
+    </div>
+    <div class="step" id="step-1"
+         style="--step-color:#9d4edd;--step-rgb:157,78,221">
+      <div class="step-dot">
+        <span class="icon">🔬</span><span class="check">✓</span>
+      </div>
+      <span class="step-label">Analizador</span>
+    </div>
+    <div class="step" id="step-2"
+         style="--step-color:#f77f00;--step-rgb:247,127,0">
+      <div class="step-dot">
+        <span class="icon">📊</span><span class="check">✓</span>
+      </div>
+      <span class="step-label">Meta-Analista</span>
+    </div>
+    <div class="step" id="step-3"
+         style="--step-color:#2dc653;--step-rgb:45,198,83">
+      <div class="step-dot">
+        <span class="icon">📝</span><span class="check">✓</span>
+      </div>
+      <span class="step-label">Redactor</span>
+    </div>
+    <div class="step" id="step-4"
+         style="--step-color:#ff4d6d;--step-rgb:255,77,109">
+      <div class="step-dot">
+        <span class="icon">🎨</span><span class="check">✓</span>
+      </div>
+      <span class="step-label">Presentador</span>
+    </div>
+  </div>
+
+  <!-- ── Conversation ── -->
+  <div id="conversation"></div>
+
+  <!-- ── Downloads ── -->
+  <div class="card" id="download-section">
+    <p style="font-weight:700;font-size:1.05rem;margin-bottom:4px">
+      📥 Archivos Generados
+    </p>
+    <p style="font-size:.84rem;color:var(--muted);margin-bottom:4px">
+      Tu revisión sistemática completa de cirugía infantil
+    </p>
+    <div class="downloads-grid" id="downloads-grid"></div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const AGENT_ORDER = ["Buscador","Analizador","Meta-Analista","Redactor","Presentador"];
+const STEP_IDX    = {"Buscador":0,"Analizador":1,"Meta-Analista":2,"Redactor":3,"Presentador":4};
+const DL_COLORS   = {
+  "apunte_medico.md":   {color:"#2dc653",rgb:"45,198,83"},
+  "presentacion.pptx":  {color:"#ff4d6d",rgb:"255,77,109"},
+  "meta_analysis.json": {color:"#f77f00",rgb:"247,127,0"},
+};
+
+let sessionId  = null;
+let evtSource  = null;
+let currentCard = null;
+let currentAgent = null;
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+function setTopic(el){
+  $("topic-input").value = el.textContent;
+  $("topic-input").focus();
+}
+
+function showError(msg){
+  $("error-text").textContent = msg;
+  $("error-banner").classList.add("visible");
+  resetBtn();
+}
+
+function resetBtn(){
+  const btn = $("run-btn");
+  btn.disabled = false;
+  btn.innerHTML = '<span>🚀</span> Generar Revisión Completa';
+}
+
+function scrollToBottom(){
+  window.scrollTo({top:document.body.scrollHeight, behavior:"smooth"});
+}
+
+// ── Pipeline start ─────────────────────────────────────────────────────────
+async function startPipeline(){
+  const topic   = $("topic-input").value.trim();
+  const apiKey  = $("api-key-input").value.trim();
+  const maxPap  = parseInt($("max-papers").value);
+
+  if(!topic){ $("topic-input").focus(); return; }
+
+  // Reset UI
+  $("error-banner").classList.remove("visible");
+  $("done-banner").classList.remove("visible");
+  $("download-section").classList.remove("visible");
+  $("conversation").innerHTML = "";
+  $("pipeline").style.display = "flex";
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active","done"));
+
+  const btn = $("run-btn");
+  btn.disabled = true;
+  btn.innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block">⚙️</span> Iniciando agentes…';
+
+  // POST to start pipeline
+  let res, body;
+  try{
+    res  = await fetch("/api/run",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({topic, max_papers:maxPap, api_key:apiKey})
+    });
+    body = await res.json();
+  } catch(e){ showError("No se pudo conectar con el servidor: "+e.message); return; }
+
+  if(!res.ok){ showError(body.detail||"Error al iniciar"); return; }
+
+  sessionId = body.session_id;
+  btn.innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block">⚙️</span> Pipeline en ejecución…';
+
+  // Open SSE stream
+  evtSource = new EventSource(`/api/stream/${sessionId}`);
+  evtSource.onmessage = handleEvent;
+  evtSource.onerror   = () => { evtSource.close(); resetBtn(); };
+}
+
+// ── Event handler ──────────────────────────────────────────────────────────
+function handleEvent(e){
+  let ev;
+  try{ ev = JSON.parse(e.data); } catch{ return; }
+
+  switch(ev.type){
+    case "agent_start":    onAgentStart(ev);    break;
+    case "agent_log":      onAgentLog(ev);      break;
+    case "agent_complete": onAgentComplete(ev); break;
+    case "pipeline_complete": onDone(ev);       break;
+    case "pipeline_error": onError(ev);         break;
+    case "stream_end":     evtSource.close();   break;
+    case "ping": break;
+  }
+}
+
+// ── agent_start ────────────────────────────────────────────────────────────
+function onAgentStart(ev){
+  // Activate pipeline step
+  const idx = STEP_IDX[ev.agent];
+  if(idx !== undefined) $(`step-${idx}`).classList.add("active");
+
+  // Build card
+  const card = document.createElement("div");
+  card.className = "agent-card";
+  card.id = `card-${ev.agent.replace(/\s/g,"-")}`;
+
+  card.innerHTML = `
+    <div class="agent-header">
+      <div class="agent-icon-wrap"
+           style="background:rgba(${hexToRgb(ev.color)},.18);
+                  border-color:${ev.color}">
+        ${ev.icon}
+      </div>
+      <div>
+        <div class="agent-name" style="color:${ev.color}">${ev.agent}</div>
+        <div class="agent-desc">${ev.description}</div>
+      </div>
+      <div class="agent-status" id="status-${ev.agent.replace(/\s/g,"-")}">
+        <div class="status-dot running" style="--agent-color:${ev.color}"></div>
+        <span>En progreso…</span>
+      </div>
+    </div>
+    <div class="agent-body" id="body-${ev.agent.replace(/\s/g,"-")}">
+      <div class="thinking">
+        <span style="background:${ev.color}"></span>
+        <span style="background:${ev.color}"></span>
+        <span style="background:${ev.color}"></span>
+      </div>
+    </div>`;
+
+  currentCard  = card;
+  currentAgent = ev.agent;
+  $("conversation").appendChild(card);
+  scrollToBottom();
+}
+
+// ── agent_log ──────────────────────────────────────────────────────────────
+function onAgentLog(ev){
+  const bodyId = `body-${ev.agent.replace(/\s/g,"-")}`;
+  const body   = $(bodyId);
+  if(!body) return;
+
+  // Remove thinking dots on first real log
+  const dots = body.querySelector(".thinking");
+  if(dots) dots.remove();
+
+  const line = document.createElement("div");
+  line.className = `log-line ${ev.level||"info"}`;
+  line.innerHTML = `<span class="log-icon"></span>
+                    <span class="log-text">${escHtml(ev.message)}</span>`;
+  body.appendChild(line);
+  scrollToBottom();
+}
+
+// ── agent_complete ─────────────────────────────────────────────────────────
+function onAgentComplete(ev){
+  // Mark step done
+  const idx = STEP_IDX[ev.agent];
+  if(idx !== undefined){
+    const step = $(`step-${idx}`);
+    step.classList.remove("active");
+    step.classList.add("done");
+  }
+
+  // Update status badge
+  const sid = `status-${ev.agent.replace(/\s/g,"-")}`;
+  const s   = $(sid);
+  if(s){
+    s.innerHTML = `<div class="status-dot done"></div><span>Completado ✓</span>`;
+    s.style.color = "#2dc653";
+  }
+
+  // Remove thinking dots
+  const bodyId = `body-${ev.agent.replace(/\s/g,"-")}`;
+  const body   = $(bodyId);
+  if(body){
+    const dots = body.querySelector(".thinking");
+    if(dots) dots.remove();
+  }
+
+  // Add summary banner below card
+  if(ev.summary){
+    const card = $(`card-${ev.agent.replace(/\s/g,"-")}`);
+    if(card){
+      const colorMap = {
+        Buscador:"#00b4d8","Analizador":"#9d4edd","Meta-Analista":"#f77f00",
+        Redactor:"#2dc653",Presentador:"#ff4d6d"
+      };
+      const c = colorMap[ev.agent] || "#1a6bc4";
+      const sum = document.createElement("div");
+      sum.className = "agent-summary";
+      sum.style.cssText = `background:rgba(${hexToRgb(c)},.12);
+        border:1px solid rgba(${hexToRgb(c)},.3);color:${c}`;
+      sum.innerHTML = `<span>✅</span><span>${escHtml(ev.summary)}</span>`;
+      card.appendChild(sum);
+    }
+  }
+  scrollToBottom();
+}
+
+// ── pipeline_complete ──────────────────────────────────────────────────────
+function onDone(ev){
+  $("done-banner").classList.add("visible");
+  resetBtn();
+
+  const grid = $("downloads-grid");
+  grid.innerHTML = "";
+
+  (ev.files||[]).forEach(f=>{
+    const c  = DL_COLORS[f.filename] || {color:"#1a6bc4",rgb:"26,107,196"};
+    const a  = document.createElement("a");
+    a.href   = `/api/download/${sessionId}/${f.filename}`;
+    a.download = f.filename;
+    a.className = "dl-btn";
+    a.style.cssText = `--btn-color:${c.color};--btn-rgb:${c.rgb}`;
+    a.innerHTML = `
+      <span class="dl-icon">${iconFor(f.filename)}</span>
+      <span class="dl-name">${f.label}</span>
+      <span class="dl-ext">.${f.ext}</span>`;
+    grid.appendChild(a);
+  });
+
+  $("download-section").classList.add("visible");
+  scrollToBottom();
+}
+
+// ── pipeline_error ─────────────────────────────────────────────────────────
+function onError(ev){
+  showError(ev.message || "Error desconocido en el pipeline");
+  evtSource && evtSource.close();
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function iconFor(fn){
+  if(fn.endsWith(".md"))   return "📝";
+  if(fn.endsWith(".pptx")) return "🎨";
+  if(fn.endsWith(".json")) return "📊";
+  return "📄";
+}
+function escHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function hexToRgb(hex){
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? `${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}` : "26,107,196";
+}
+
+// Spin animation for button
+const style = document.createElement("style");
+style.textContent = "@keyframes spin{to{transform:rotate(360deg)}}";
+document.head.appendChild(style);
+
+// Enter key submits
+$("topic-input").addEventListener("keydown",e=>{if(e.key==="Enter")startPipeline()});
+</script>
+</body>
+</html>
