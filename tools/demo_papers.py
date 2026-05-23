@@ -1,0 +1,167 @@
+"""Demo papers for testing the pipeline without external API access."""
+
+DEMO_PAPERS = {
+    "diabetes": [
+        {
+            "pmid": "36543210",
+            "title": "Efficacy of SGLT2 inhibitors in type 2 diabetes mellitus: a systematic review and meta-analysis",
+            "authors": ["Smith J", "García R", "Chen W", "Patel S"],
+            "journal": "The Lancet Diabetes & Endocrinology",
+            "year": "2023",
+            "abstract": "Background: SGLT2 inhibitors have emerged as cornerstone therapy in type 2 diabetes (T2DM). We conducted a systematic review and meta-analysis of 45 RCTs (n=87,432) evaluating cardiovascular and renal outcomes. Methods: We searched PubMed, EMBASE and Cochrane through December 2022. Primary outcomes were major adverse cardiovascular events (MACE) and renal progression. Results: SGLT2 inhibitors significantly reduced MACE (HR 0.86, 95% CI 0.80–0.93, p<0.001), hospitalisation for heart failure (HR 0.69, 95% CI 0.61–0.79), and renal progression (HR 0.62, 95% CI 0.56–0.70). HbA1c reduction was 0.72% (95% CI 0.65–0.79). Weight loss averaged 2.1 kg. Genital mycotic infections increased (RR 3.5). Conclusions: SGLT2 inhibitors provide robust cardiorenal protection beyond glycaemic control and should be prioritised in T2DM with established cardiovascular or renal disease.",
+            "doi": "10.1016/s2213-8587(23)00001-1",
+            "citations": 312,
+            "source": "PubMed",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36543210/",
+            "publication_types": ["Meta-Analysis", "Systematic Review"],
+        },
+        {
+            "pmid": "36012345",
+            "title": "GLP-1 receptor agonists versus insulin in type 2 diabetes: a network meta-analysis",
+            "authors": ["Johnson M", "Williams P", "Lee K"],
+            "journal": "Diabetes Care",
+            "year": "2023",
+            "abstract": "Objective: To compare GLP-1 receptor agonists (GLP-1RA) versus basal insulin in T2DM using network meta-analysis. We included 62 RCTs (n=41,000). GLP-1RA demonstrated superior HbA1c reduction (−1.1% vs −0.9%), greater weight loss (−3.2 kg vs +1.8 kg), and lower hypoglycaemia risk (RR 0.41). Semaglutide ranked best for cardiovascular outcomes. Nausea was more common with GLP-1RA (28%). Conclusion: GLP-1RA should be preferred over insulin in most patients with T2DM not achieving glycaemic targets.",
+            "doi": "10.2337/dc22-2100",
+            "citations": 189,
+            "source": "PubMed",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36012345/",
+            "publication_types": ["Meta-Analysis"],
+        },
+        {
+            "pmid": "35876543",
+            "title": "Intensive lifestyle intervention in type 2 diabetes: 10-year outcomes from the Look AHEAD trial",
+            "authors": ["Look AHEAD Research Group", "Wing RR"],
+            "journal": "New England Journal of Medicine",
+            "year": "2022",
+            "abstract": "Long-term outcomes of intensive lifestyle intervention (ILI) in 5145 adults with T2DM and overweight/obesity. ILI produced sustained weight loss (6% at 8 years), improved fitness, reduced medications and diabetes-related distress. Cardiovascular events were not significantly reduced (HR 0.95, 95% CI 0.83–1.09) but remission of T2DM was more common (11.5% vs 2%). ILI remains essential for diabetes management.",
+            "doi": "10.1056/NEJMoa1212914",
+            "citations": 4521,
+            "source": "Semantic Scholar",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/35876543/",
+            "publication_types": ["Randomized Controlled Trial"],
+        },
+        {
+            "pmid": "36234567",
+            "title": "Metformin as first-line therapy in type 2 diabetes: updated evidence and guidelines",
+            "authors": ["Brown A", "Taylor C", "Martinez L"],
+            "journal": "Annals of Internal Medicine",
+            "year": "2023",
+            "abstract": "This review updates evidence on metformin in T2DM. Metformin reduces HbA1c by 1.1–1.5%, is weight-neutral, low-cost, and has pleiotropic effects. Cardiovascular benefit was demonstrated in the UKPDS trial. Lactic acidosis risk is extremely low (1–5 per 100,000 patient-years). Vitamin B12 deficiency occurs in 5-10% of long-term users. Guidelines from ADA/EASD recommend metformin as initial therapy unless contraindicated, combined with SGLT2i or GLP-1RA in high-risk patients.",
+            "doi": "10.7326/M22-3456",
+            "citations": 234,
+            "source": "CrossRef",
+            "url": "https://doi.org/10.7326/M22-3456",
+            "publication_types": ["Review"],
+        },
+        {
+            "pmid": "36789012",
+            "title": "Continuous glucose monitoring in type 2 diabetes not on insulin: a randomized controlled trial",
+            "authors": ["Ehrhardt N", "Bernstein R", "Dhindsa S"],
+            "journal": "JAMA",
+            "year": "2023",
+            "abstract": "RCT of 175 adults with T2DM not on insulin randomized to CGM vs standard care for 8 months. CGM reduced HbA1c by 0.4% more than standard care (p=0.02) and increased time-in-range by 59 min/day. Patient satisfaction was higher with CGM. No differences in hypoglycaemia. Conclusion: CGM benefits extend to non-insulin T2DM patients.",
+            "doi": "10.1001/jama.2023.4567",
+            "citations": 156,
+            "source": "PubMed",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36789012/",
+            "publication_types": ["Randomized Controlled Trial"],
+        },
+    ],
+    "hipertension": [
+        {
+            "pmid": "37012345",
+            "title": "Intensive blood pressure control and cardiovascular outcomes: SPRINT trial update",
+            "authors": ["SPRINT Research Group", "Wright JT"],
+            "journal": "New England Journal of Medicine",
+            "year": "2022",
+            "abstract": "Extended follow-up of SPRINT: 9,361 adults with hypertension but without diabetes randomized to systolic BP target <120 vs <140 mmHg. Intensive control reduced primary cardiovascular endpoint (HR 0.75, 95% CI 0.64–0.89), all-cause mortality (HR 0.73) and heart failure (HR 0.62). Serious adverse events including AKI were more frequent in intensive arm (4.1% vs 2.5%). NNT for preventing one CVD event: 61 over 3.26 years.",
+            "doi": "10.1056/NEJMoa2200324",
+            "citations": 1823,
+            "source": "PubMed",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/37012345/",
+            "publication_types": ["Randomized Controlled Trial"],
+        },
+        {
+            "pmid": "37123456",
+            "title": "Combination antihypertensive therapy versus monotherapy: systematic review and meta-analysis",
+            "authors": ["Wald DS", "Law M", "Morris JK"],
+            "journal": "The Lancet",
+            "year": "2023",
+            "abstract": "Meta-analysis of 42 trials (n=10,968) comparing combination vs monotherapy. Low-dose combination reduced BP by 9.1/5.5 mmHg more than monotherapy (p<0.001). Adverse effects were similar or lower. Single-pill combinations improved adherence by 33%. The greatest BP reductions were with RAAS blocker + CCB or thiazide. Conclusion: Initial combination therapy should be standard for most hypertensive patients.",
+            "doi": "10.1016/S0140-6736(23)00123-4",
+            "citations": 445,
+            "source": "PubMed",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/37123456/",
+            "publication_types": ["Meta-Analysis", "Systematic Review"],
+        },
+        {
+            "pmid": "37234567",
+            "title": "Lifestyle modifications for hypertension management: evidence review 2023",
+            "authors": ["Whelton PK", "Carey RM", "Aronow WS"],
+            "journal": "Hypertension",
+            "year": "2023",
+            "abstract": "Comprehensive review of non-pharmacological interventions for hypertension. DASH diet reduces SBP by 8–14 mmHg. Sodium restriction (<1.5g/day) reduces 5.8 mmHg. Regular aerobic exercise (150 min/week) reduces 5.2 mmHg. Weight loss (10 kg) reduces 5–20 mmHg. Moderation of alcohol (≤2 drinks/day men, 1/day women) reduces 2–4 mmHg. Combination approaches achieve additive effects. These measures should accompany all pharmacological therapy.",
+            "doi": "10.1161/HYP.0000000000000065",
+            "citations": 987,
+            "source": "CrossRef",
+            "url": "https://doi.org/10.1161/HYP.0000000000000065",
+            "publication_types": ["Review"],
+        },
+    ],
+    "default": [
+        {
+            "pmid": "36000001",
+            "title": "Systematic review of evidence-based interventions in the medical field",
+            "authors": ["Author A", "Author B", "Author C"],
+            "journal": "Journal of Medicine",
+            "year": "2023",
+            "abstract": "A comprehensive systematic review evaluating the effectiveness of various medical interventions. We searched PubMed, EMBASE and Cochrane databases for RCTs and cohort studies. We included 25 studies with a total of 15,000 participants. Results show significant improvements in primary outcomes (p<0.01). Adverse effects were minimal. Conclusions support implementing these interventions in clinical practice.",
+            "doi": "10.1000/medicine.2023.001",
+            "citations": 150,
+            "source": "Demo",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36000001/",
+            "publication_types": ["Systematic Review"],
+        },
+        {
+            "pmid": "36000002",
+            "title": "Meta-analysis of randomized controlled trials: treatment outcomes and safety",
+            "authors": ["Smith B", "Jones C"],
+            "journal": "New England Journal of Medicine",
+            "year": "2022",
+            "abstract": "Meta-analysis of 18 RCTs. Primary endpoint was achieved in intervention group (OR 2.3, 95% CI 1.8–2.9, p<0.001). Secondary outcomes also favoured intervention. NNT was 8 for primary outcome. Safety profile was acceptable with 5% discontinuation rate.",
+            "doi": "10.1056/demo.2022.002",
+            "citations": 320,
+            "source": "Demo",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36000002/",
+            "publication_types": ["Meta-Analysis"],
+        },
+        {
+            "pmid": "36000003",
+            "title": "Long-term cohort study: 5-year follow-up outcomes",
+            "authors": ["García L", "Chen M"],
+            "journal": "JAMA",
+            "year": "2023",
+            "abstract": "Prospective cohort study of 3,200 patients followed for 5 years. Exposure was associated with 34% reduction in events (HR 0.66, 95% CI 0.54–0.81). Subgroup analyses were consistent. Propensity score adjustment did not change results. Study limitations include observational design and residual confounding.",
+            "doi": "10.1001/jama.2023.003",
+            "citations": 89,
+            "source": "Demo",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/36000003/",
+            "publication_types": ["Cohort Study"],
+        },
+    ],
+}
+
+
+def get_demo_papers(topic: str) -> list[dict]:
+    """Return demo papers matching the topic keywords."""
+    topic_lower = topic.lower()
+    if any(kw in topic_lower for kw in ["diabetes", "gluc", "insulina", "insulin", "sglt"]):
+        return DEMO_PAPERS["diabetes"]
+    if any(kw in topic_lower for kw in ["hiperten", "hypertens", "presion", "pressure", "blood press"]):
+        return DEMO_PAPERS["hipertension"]
+    # Return default + annotate topic
+    papers = DEMO_PAPERS["default"].copy()
+    for p in papers:
+        p["title"] = f"[{topic}] " + p["title"]
+    return papers
