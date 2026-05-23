@@ -83,8 +83,9 @@ class MetaAnalysisAgent:
         "Distribución etaria · Técnicas quirúrgicas comparadas"
     )
 
-    def __init__(self, api_key: str = ""):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+    def __init__(self, api_key: str = "", provider: str = "groq"):
+        self.api_key = api_key or os.environ.get("GROQ_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        self.provider = provider
 
     def _summarize_for_prompt(self, papers: list[dict]) -> str:
         summaries = []
@@ -119,7 +120,7 @@ class MetaAnalysisAgent:
         prompt = META_PROMPT.format(articles_json=articles_json, topic=topic)
 
         try:
-            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=4096)
+            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=4096, provider=self.provider)
             meta = json.loads(text)
         except Exception as e:
             console.print(f"  [red]Error en meta-análisis:[/red] {e}")

@@ -51,7 +51,7 @@ def _emit(q: queue.Queue, event_type: str, **kw):
 # ── Pipeline (runs in thread) ────────────────────────────────────────────── #
 
 def run_pipeline(session_id: str, topic: str, max_papers: int,
-                 api_key: str, q: queue.Queue):
+                 api_key: str, provider: str, q: queue.Queue):
     try:
         ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
         slug = topic[:35].lower().replace(" ", "_").replace("/", "-")
@@ -82,8 +82,10 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
             json.dumps(papers, ensure_ascii=False, indent=2), encoding="utf-8")
 
         if not api_key:
+            links = {"groq": "console.groq.com", "gemini": "aistudio.google.com"}
+            link  = links.get(provider, "el proveedor seleccionado")
             _emit(q, "pipeline_error",
-                  message="Google AI API Key no configurada. Obtén una gratis en aistudio.google.com y pégala en el formulario.")
+                  message=f"API Key no configurada. Obtén una gratis en {link} y pégala en el formulario.")
             q.put(None)
             return
 
@@ -93,9 +95,9 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
               description="Cirujano pediatra · PICO-S · Nivel evidencia CEBM · "
                           "Calidad metodológica · Grupo etario")
         em = AgentEmitter(q, "Analizador")
-        em.log(f"Analizando {len(batch)} artículos con Gemini 1.5 Flash...")
+        em.log(f"Analizando {len(batch)} artículos con {provider.upper()}......")
 
-        analyzer = AnalysisAgent(api_key=api_key)
+        analyzer = AnalysisAgent(api_key=api_key, provider=provider)
         analyzed = []
         for i, paper in enumerate(batch, 1):
             result = analyzer._analyze_one(paper)
@@ -125,7 +127,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em.log("Evaluando heterogeneidad, sesgos de publicación y distribución etaria...")
         em.log("Comparando técnicas quirúrgicas (laparoscópica vs abierta vs alternativas)...")
 
-        meta_agent = MetaAnalysisAgent(api_key=api_key)
+        meta_agent = MetaAnalysisAgent(api_key=api_key, provider=provider)
         meta = meta_agent.run(analyzed, topic)
 
         nivel_g = meta.get("nivel_evidencia_global", "N/A")
@@ -155,7 +157,7 @@ def run_pipeline(session_id: str, topic: str, max_papers: int,
         em.log("Secciones: Epidemiología · Embriología · Clínica por grupo etario · "
                "Diagnóstico · Técnica quirúrgica · Anestesia · Complicaciones...")
 
-        notes_agent = NotesAgent(api_key=api_key)
+        notes_agent = NotesAgent(api_key=api_key, provider=provider)
         notes_md = notes_agent.run(topic, meta, analyzed)
         notes_path = out / "04_apunte_medico.md"
         notes_path.write_text(notes_md, encoding="utf-8")
@@ -216,6 +218,7 @@ class RunRequest(BaseModel):
     topic: str
     max_papers: int = 15
     api_key: str = ""
+    provider: str = "groq"   # "groq" | "gemini"
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -229,14 +232,14 @@ async def start_run(req: RunRequest):
     topic = req.topic.strip()
     if not topic:
         raise HTTPException(400, "Tema vacío")
-    api_key = req.api_key.strip() or os.environ.get("GEMINI_API_KEY", "")
+    api_key = req.api_key.strip() or os.environ.get("GROQ_API_KEY","") or os.environ.get("GEMINI_API_KEY","")
 
     sid = str(uuid.uuid4())
     q: queue.Queue = queue.Queue()
     sessions[sid] = {"queue": q, "files": {}, "status": "running"}
 
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(executor, run_pipeline, sid, topic, req.max_papers, api_key, q)
+    loop.run_in_executor(executor, run_pipeline, sid, topic, req.max_papers, api_key, req.provider, q)
 
     return {"session_id": sid}
 

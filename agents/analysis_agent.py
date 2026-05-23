@@ -61,8 +61,9 @@ class AnalysisAgent:
         "Calidad metodológica · Grupo etario"
     )
 
-    def __init__(self, api_key: str = ""):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+    def __init__(self, api_key: str = "", provider: str = "groq"):
+        self.api_key = api_key or os.environ.get("GROQ_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        self.provider = provider
 
     def _analyze_one(self, paper: dict) -> dict:
         prompt = ANALYSIS_PROMPT.format(
@@ -73,7 +74,7 @@ class AnalysisAgent:
             abstract=paper.get("abstract", "Sin resumen disponible")[:3000],
         )
         try:
-            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=1024)
+            text = call_llm(SYSTEM, prompt, self.api_key, max_tokens=1024, provider=self.provider)
             analysis = json.loads(text)
         except (json.JSONDecodeError, Exception) as e:
             analysis = {

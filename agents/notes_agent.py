@@ -113,8 +113,9 @@ class NotesAgent:
         "Dosis mg/kg · Cuidados perioperatorios pediátricos"
     )
 
-    def __init__(self, api_key: str = ""):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY", "")
+    def __init__(self, api_key: str = "", provider: str = "groq"):
+        self.api_key = api_key or os.environ.get("GROQ_API_KEY", "") or os.environ.get("GEMINI_API_KEY", "")
+        self.provider = provider
 
     def run(self, topic: str, meta: dict, papers: list[dict]) -> str:
         console.print(
@@ -125,7 +126,7 @@ class NotesAgent:
         prompt = NOTES_PROMPT.format(topic=topic, meta_json=meta_json)
 
         with console.status("  Generando apunte de cirugía infantil..."):
-            notes = call_llm(SYSTEM, prompt, self.api_key, max_tokens=8192, temperature=0.4)
+            notes = call_llm(SYSTEM, prompt, self.api_key, max_tokens=8192, temperature=0.4, provider=self.provider)
 
         console.print("  [bold]✓ Apunte generado[/bold]\n")
         return notes
